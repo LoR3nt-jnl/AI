@@ -1,0 +1,10 @@
+# Donnees generees ou potentiellement personnelles
+miro-invoices/
+*.pdf
+gmail-draft-request.json
+
+# Windows / PowerShell temporaires
+*.tmp
+*.log
+.DS_Store
+Thumbs.db
