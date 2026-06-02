@@ -1,0 +1,17 @@
+{
+  "apps": [
+    {
+      "id": "assistant-contrats",
+      "name": "Assistant contrats",
+      "description": "Application creee avec Google AI Studio pour relire des clauses.",
+      "category": "Applications IA",
+      "origin": "gai-studio",
+      "author": "Moi",
+      "tags": ["Gemini", "Juridique"],
+      "accessUrl": "https://assistant-contrats.example.com",
+      "googleProject": "mon-projet-google-cloud",
+      "cloudService": "cloud-run/assistant-contrats",
+      "status": "Pret"
+    }
+  ]
+}
