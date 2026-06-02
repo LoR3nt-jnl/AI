@@ -1,0 +1,25 @@
+[
+  {
+    "id": "miro-invoices",
+    "name": "Factures Miro",
+    "description": "Demande une date de depart, indique les factures Miro a telecharger, rassemble les PDF, puis prepare un email Gmail.",
+    "category": "Facturation",
+    "origin": "codex",
+    "author": "Moi",
+    "tags": [
+      "Codex",
+      "miro",
+      "factures",
+      "telechargement",
+      "pdf"
+    ],
+    "isFavorite": false,
+    "accessUrl": "",
+    "googleProject": "",
+    "cloudService": "",
+    "scriptPath": "download-miro-invoices.ps1",
+    "arguments": "",
+    "accent": "#1367ff",
+    "status": "Pret"
+  }
+]
