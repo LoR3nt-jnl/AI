@@ -1,0 +1,11 @@
+{
+  "manifest_version": 3,
+  "name": "Lecture de sélection (FR)",
+  "version": "1.0.0",
+  "description": "Lit en français le texte sélectionné dans l'onglet actif.",
+  "permissions": ["activeTab", "scripting", "tts"],
+  "action": {
+    "default_title": "Lire la sélection",
+    "default_popup": "popup.html"
+  }
+}
