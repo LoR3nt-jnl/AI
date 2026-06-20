@@ -10,24 +10,41 @@ export type ParsedTask = {
   due?: string | null;
 };
 
-export function parseIosTask(task: GoogleTask, prefix: string): ParsedTask | null {
-  const title = task.title?.trim();
-  if (!title || !task.id) return null;
-  const prefixPattern = new RegExp(`^${escapeRegExp(prefix)}\\b`, 'i');
-  if (!prefixPattern.test(title)) return null;
+export type ParsedTitle = {
+  title: string;
+  requestedList?: string;
+};
 
-  const withoutPrefix = title.replace(prefixPattern, '').trim();
+export function parseTaskTitle(rawTitle: string, options: { prefix?: string } = {}): ParsedTitle | null {
+  const title = rawTitle.trim();
+  if (!title) return null;
+
+  let withoutPrefix = title;
+  if (options.prefix) {
+    const prefixPattern = new RegExp(`^${escapeRegExp(options.prefix)}\\b`, 'i');
+    if (!prefixPattern.test(title)) return null;
+    withoutPrefix = title.replace(prefixPattern, '').trim();
+  }
+
   const separator = withoutPrefix.lastIndexOf(' - ');
   const reminderTitle = (separator >= 0 ? withoutPrefix.slice(0, separator) : withoutPrefix).trim();
   const requestedList = separator >= 0 ? withoutPrefix.slice(separator + 3).trim() : undefined;
   if (!reminderTitle) return null;
+  return { title: reminderTitle, requestedList: requestedList || undefined };
+}
+
+export function parseIosTask(task: GoogleTask, prefix: string): ParsedTask | null {
+  const title = task.title?.trim();
+  if (!title || !task.id) return null;
+  const parsed = parseTaskTitle(title, { prefix });
+  if (!parsed) return null;
 
   return {
     googleId: task.id,
     googleUrl: task.selfLink,
     originalTitle: title,
-    reminderTitle,
-    requestedList: requestedList || undefined,
+    reminderTitle: parsed.title,
+    requestedList: parsed.requestedList,
     notes: task.notes,
     due: task.due,
   };

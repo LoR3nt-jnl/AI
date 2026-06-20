@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Google Tasks ↔ Rappels iCloud Sync</title>
+  <style>
+    body { margin: 0; font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f6f8fb; color: #162033; }
+    main { max-width: 980px; margin: 0 auto; padding: 56px 24px; }
+    .hero { background: linear-gradient(135deg, #1d4ed8, #7c3aed); color: white; border-radius: 28px; padding: 48px; box-shadow: 0 24px 70px rgba(29,78,216,.22); }
+    h1 { font-size: clamp(2rem, 5vw, 4.5rem); line-height: 1; margin: 0 0 18px; }
+    h2 { margin-top: 34px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px; margin-top: 24px; }
+    .card { background: white; border: 1px solid #dbe3ef; border-radius: 20px; padding: 24px; }
+    code { background: #eef2ff; color: #3730a3; padding: 2px 6px; border-radius: 6px; }
+    pre { overflow: auto; background: #0f172a; color: #e2e8f0; border-radius: 16px; padding: 18px; }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="hero">
+      <h1>Synchronisation Google Tasks ↔ Rappels iCloud</h1>
+      <p>Une application TypeScript pour router automatiquement les tâches entre Google Tasks et Rappels iOS selon vos listes <strong>Live Session</strong>, <strong>Laurent.janolin</strong> et <strong>Tâches domestiques</strong>.</p>
+    </section>
+
+    <section class="grid">
+      <article class="card">
+        <h2>Depuis iOS</h2>
+        <p>Les rappels de <code>Live Session</code> deviennent des tâches Google dans <code>Laurent.janolin</code> avec le préfixe <code>iOS</code>. Les autres rappels vont vers <code>Tâches domestiques</code>.</p>
+      </article>
+      <article class="card">
+        <h2>Depuis Google Tasks</h2>
+        <p>Les tâches de <code>Tâches domestiques</code> sont envoyées vers Rappels. Dans <code>Laurent.janolin</code>, seules les tâches commençant par <code>iOS</code> sont envoyées.</p>
+      </article>
+      <article class="card">
+        <h2>Listes intelligentes</h2>
+        <p>Le suffixe <code> - Maison</code> cible la liste Rappels correspondante. En cas d'erreur de nom, la liste la plus proche est choisie ou la liste par défaut est utilisée.</p>
+      </article>
+    </section>
+
+    <h2>Démarrage</h2>
+    <pre><code>npm install
+export ICLOUD_USERNAME="votre-identifiant-icloud@example.com"
+export ICLOUD_APP_PASSWORD="xxxx-xxxx-xxxx-xxxx"
+DRY_RUN=true npm run sync</code></pre>
+  </main>
+</body>
+</html>

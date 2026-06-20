@@ -1,6 +1,8 @@
 export type SyncConfig = {
-  googleTaskListName: string;
   taskPrefix: string;
+  liveSessionListName: string;
+  personalGoogleListName: string;
+  domesticGoogleListName: string;
   defaultReminderList: string;
   maxFuzzyDistance: number;
   dryRun: boolean;
@@ -21,9 +23,11 @@ function env(name: string, fallback?: string): string {
 
 export function loadConfig(): SyncConfig {
   return {
-    googleTaskListName: env('GOOGLE_TASK_LIST_NAME', 'live session'),
     taskPrefix: env('TASK_PREFIX', 'iOS'),
-    defaultReminderList: env('ICLOUD_DEFAULT_REMINDER_LIST', 'Reminders'),
+    liveSessionListName: env('LIVE_SESSION_LIST_NAME', 'Live Session'),
+    personalGoogleListName: env('GOOGLE_PERSONAL_LIST_NAME', 'Laurent.janolin'),
+    domesticGoogleListName: env('GOOGLE_DOMESTIC_LIST_NAME', 'Tâches domestiques'),
+    defaultReminderList: env('ICLOUD_DEFAULT_REMINDER_LIST', 'Rappels'),
     maxFuzzyDistance: Number(env('FUZZY_LIST_MAX_DISTANCE', '3')),
     dryRun: env('DRY_RUN', 'false').toLowerCase() === 'true',
     googleCredentialsPath: env('GOOGLE_CREDENTIALS_PATH', 'credentials.json'),

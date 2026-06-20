@@ -1,8 +1,9 @@
 import { Base64 } from 'js-base64';
 import { closestByTitle } from './fuzzy.js';
-import type { ParsedTask } from './parser.js';
+import type { GoogleToIcloudTask } from './syncRules.js';
 
 export type ReminderList = { title: string; url: string };
+export type ReminderItem = { uid: string; url: string; listTitle: string; title: string; notes?: string; due?: string; completed: boolean };
 
 const ICLOUD_ROOT = 'https://caldav.icloud.com';
 const MARKER_PREFIX = 'GOOGLE_TASK_ID:';
@@ -25,6 +26,28 @@ export class ICloudRemindersClient {
       ?? fallback;
   }
 
+
+  async getAllReminders(): Promise<ReminderItem[]> {
+    const lists = await this.getReminderLists();
+    const groups = await Promise.all(lists.map((list) => this.getRemindersFromList(list)));
+    return groups.flat();
+  }
+
+  async getRemindersFromList(list: ReminderList): Promise<ReminderItem[]> {
+    const response = await this.request(list.url, 'REPORT', `<?xml version="1.0" encoding="utf-8" ?>
+<C:calendar-query xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:caldav">
+  <D:prop><D:getetag/><C:calendar-data/></D:prop>
+  <C:filter><C:comp-filter name="VCALENDAR"><C:comp-filter name="VTODO"/></C:comp-filter></C:filter>
+</C:calendar-query>`, { Depth: '1' });
+    const body = await response.text();
+    return splitDavResponses(body).flatMap((item) => {
+      const url = readHref(item);
+      const calendarData = readTag(item, 'calendar-data');
+      const parsed = parseVtodo(calendarData);
+      return url && parsed ? [{ ...parsed, url: absolute(url), listTitle: list.title }] : [];
+    });
+  }
+
   async reminderExists(list: ReminderList, googleTaskId: string): Promise<boolean> {
     const response = await this.request(list.url, 'REPORT', `<?xml version="1.0" encoding="utf-8" ?>
 <C:calendar-query xmlns:D="DAV:" xmlns:C="urn:ietf:params:xml:ns:caldav">
@@ -35,7 +58,7 @@ export class ICloudRemindersClient {
     return body.includes(`${MARKER_PREFIX}${googleTaskId}`);
   }
 
-  async createReminder(list: ReminderList, task: ParsedTask): Promise<void> {
+  async createReminder(list: ReminderList, task: GoogleToIcloudTask): Promise<void> {
     const id = crypto.randomUUID();
     const now = formatIcsDate(new Date());
     const dueLine = task.due ? `DUE;VALUE=DATE:${task.due.slice(0, 10).replaceAll('-', '')}\r\n` : '';
@@ -71,8 +94,7 @@ export class ICloudRemindersClient {
 
   private async listCalendars(homeSet: string): Promise<ReminderList[]> {
     const xml = await this.propfind(homeSet, '<D:displayname/><D:resourcetype/>', '1');
-    const responses = xml.split(/<[^:>]*:?response[\s>]/).slice(1);
-    return responses.flatMap((response) => {
+    return splitDavResponses(xml).flatMap((response) => {
       if (!response.includes('VTODO')) return [];
       const href = readHref(response);
       const title = readTag(response, 'displayname');
@@ -129,4 +151,34 @@ function escapeIcs(value: string): string {
 
 function decodeXml(value: string): string {
   return value.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&apos;/g, "'");
+}
+
+
+function splitDavResponses(xml: string): string[] {
+  return xml.split(/<[^:>]*:?response[\s>]/).slice(1);
+}
+
+function parseVtodo(calendarData: string): Omit<ReminderItem, 'url' | 'listTitle'> | null {
+  if (!calendarData) return null;
+  const unfolded = calendarData.replace(/\r?\n[ \t]/g, '');
+  const uid = readIcsField(unfolded, 'UID');
+  const title = readIcsField(unfolded, 'SUMMARY');
+  if (!uid || !title) return null;
+  const status = readIcsField(unfolded, 'STATUS');
+  return {
+    uid,
+    title,
+    notes: readIcsField(unfolded, 'DESCRIPTION') || undefined,
+    due: readIcsField(unfolded, 'DUE') || undefined,
+    completed: status === 'COMPLETED' || Boolean(readIcsField(unfolded, 'COMPLETED')),
+  };
+}
+
+function readIcsField(ics: string, field: string): string {
+  const match = ics.match(new RegExp(`^${field}(?:;[^:]*)?:(.*)$`, 'im'));
+  return unescapeIcs(match?.[1]?.trim() ?? '');
+}
+
+function unescapeIcs(value: string): string {
+  return value.replace(/\\n/g, '\n').replace(/\\,/g, ',').replace(/\\;/g, ';').replace(/\\\\/g, '\\');
 }
